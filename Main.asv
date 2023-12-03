@@ -69,8 +69,10 @@ for i=1:num_V
         totalPath = vertcat(totalPath, pathPoints);
     end
     plot(totalPath(:, 1), totalPath(:, 2), 'LineWidth', 1);
-    for ii = 1:2:length(totalPath)
-    text(totalPath(ii,1)+.25,totalPath(ii,2)+.25,string(ii),'FontSize',8,'FontWeight','bold');
+    for ii = 1:length(totalPath)
+        if totalPath(ii,:) = deliveries
+            text(totalPath(ii,1)+.25,totalPath(ii,2)+.25,string(ii),'FontSize',8,'FontWeight','bold');
+        end
     end
 end
 plot(deliveries(:,1),deliveries(:,2),'.b','MarkerSize', 15)

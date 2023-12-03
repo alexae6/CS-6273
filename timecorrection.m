@@ -1,13 +1,20 @@
-function [pp,disttots,p] = createpaths(deliveries,num_V)
-    %% Find closest points 
-    distances = pdist(deliveries);
-    linkageMatrix = linkage(distances, 'average'); % 'average' linkage can be replaced with other methods
-    % Perform clustering
-    p = cluster(linkageMatrix, 'MaxClust', num_V);
-    
-    %%
-    % Create 
-    pp = cell(num_V, 1); 
+function [pp,disttots,p] = timecorrection(all_locations_w_time,deliveries,p,num_V)
+for i=1:length(all_locations_w_time)
+current = all_locations_w_time{i};
+times_all(i) = length(current(:,3));
+end
+shortest_location = min(times_all);
+idx = find(times_all==shortest_location);
+
+for i=1:length(all_locations_w_time)
+    current = all_locations_w_time{i};
+    if current(end,3) > 40
+        clust = find(p==i);
+        move = deliveries(clust(end),:);
+        p(clust(end)) = idx;
+    end
+end
+pp = cell(num_V, 1); 
     disttots = zeros(1,num_V);
     for i = 1:num_V
         idx = find(p == i);
@@ -32,8 +39,8 @@ function [pp,disttots,p] = createpaths(deliveries,num_V)
             % Calculate paths
                 pathPoints = paths(deliveries(idx(j), :), deliveries(idx(j+1), :));
                 pp{i,j+1} = pathPoints;
-              
             end
         end
     end
-end
+
+        
