@@ -1,6 +1,5 @@
-function [pp,disttots] = createpaths(deliveries,num_V)
+function [pp,disttots,p] = createpaths(deliveries,num_V)
     %% Find closest points 
-    
     distances = pdist(deliveries);
     linkageMatrix = linkage(distances, 'average'); % 'average' linkage can be replaced with other methods
     % Perform clustering

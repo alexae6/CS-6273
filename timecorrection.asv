@@ -17,28 +17,27 @@ for i=1:length(all_locations_w_time)
 %         p(clust(end)) = idx;
     end
 end
+if opts 
 minDistance = 100;
-closest = 0;
 for i = 1:size(opts, 1)
     currentPoint = opts(i, :);
     for j=1:size(deliveries,1)
     distance = norm(currentPoint - deliveries(j,:));
     % Check if the current point is closer than the previously found closest point
-    if distance < minDistance && distance~=0
+    if distance < minDistance
         minDistance = distance;
         closest = currentPoint;
     end
     end
 end
-a=0;
 for k=1:length(deliveries)
    if(deliveries(k,:)==closest)
        a = k;
    end
 end
-if a~=0
+
 p(a) = idx;
-end
+
 pp = cell(num_V, 1); 
 disttots = zeros(1,num_V);
     for i = 1:num_V
