@@ -1,28 +1,36 @@
 function [samelocation,all_locations_w_time] = locationcheck(pp)
+% Check if two vehicles are at the same place at the same time
+% Inputs- path of each vehicle
+% Outputs- bool if any vehicles are in same location and same time, path of
+% each location with time steps
+
+% Create paths with time steps for each vehicle
 samelocation = false(size(pp, 1), size(pp, 1));
-for i = 1:size(pp, 1)
+for i = 1:size(pp, 1) % Loop though all vehicle paths
     totalpath = vertcat(pp{i, :});
     time = (1:length(totalpath))';
     location_w_time1 = [totalpath, time];
     all_locations_w_time{i} = location_w_time1;
         
+    % Loop through each vehicle path to ensure vehicles are not in same location
+    % at same time
     for j=1:size(pp,1)
-        if i ~= j
-        totalpath = vertcat(pp{j, :});
-        time = (1:length(totalpath))' * 5;
-        location_w_time2 = [totalpath, time]; 
-
-        % Minimum length of paths
-        minLength = min(size(location_w_time1, 1), size(location_w_time2, 1));
-        % Check for equal locations
-        clear E
-        for k=2:minLength
-                E(k,:) = location_w_time1(k,:) == location_w_time2(k,:);
-        end
-         if any(all(E,2))
-                samelocation(i, j) = true;
+        if i ~= j % If the same path
+            totalpath = vertcat(pp{j, :});
+            time = (1:length(totalpath))' * 5;
+            location_w_time2 = [totalpath, time]; 
+    
+            % Minimum length of paths to initalize array
+            minLength = min(size(location_w_time1, 1), size(location_w_time2, 1));
+            % Check for equal locations
+            clear E
+            for k=2:minLength
+                    E(k,:) = location_w_time1(k,:) == location_w_time2(k,:);
             end
-    end
+            if any(all(E,2))
+                    samelocation(i, j) = true;
+            end
+        end
     end
 end
 

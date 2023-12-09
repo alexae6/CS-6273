@@ -1,4 +1,9 @@
 function [pathPoints] = paths(start,finish)
+% Create paths between two points
+% Input- start path location
+% Output- array of points connecting two points
+
+    % initalize
     x0 = start(1);
     y0 = start(2);
     x1 = finish(1);
@@ -11,6 +16,7 @@ function [pathPoints] = paths(start,finish)
     
     pathPoints = [x0, y0];
     
+    % If need to move in x direction
     if dx >= dy
         error = dx / 2;
         while x0 ~= x1
@@ -22,6 +28,7 @@ function [pathPoints] = paths(start,finish)
             end
             pathPoints = [pathPoints; x0, y0];
         end
+    % If need to move in y direction   
     elseif dy > dx
         error = dy / 2;
         while y0 ~= y1

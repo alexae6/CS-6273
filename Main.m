@@ -1,4 +1,10 @@
-%% Inputs
+function main()
+% Main Function for runing VRP
+% Inputs- none
+% Output- none
+
+% Input for grid size, number of deliveries, vehicles, and location of
+% depot
 grid_size = input(['Enter grid size (length,width): '], 's');
 gridx  = str2num(extractBefore(grid_size,','));
 gridy = str2num(extractAfter(grid_size,','));
@@ -10,13 +16,24 @@ num_V = input('Enter the number of vehicles: ');
 deliveryPercentage = (num_Deliveries / (gridx*gridy));
 if deliveryPercentage > .50
     disp('Error: More than 50% of the city are deliveries. Please change deliveries');
-    return;
+    return; % Stop if
 end
 % Check relationship between deliveries and vehicles
 if num_V >= num_Deliveries
     fprintf('Warning: More vehicles than deliveries, only using %d vehicles \n',num_Deliveries);
+    num_V = num_Deliveries;
 end
 
+% Input depot location
+coordinates = input(['Enter coordinates for depot location: (x,y): '], 's');
+x  = extractBefore(coordinates,',');
+y = extractAfter(coordinates,',');
+x = str2num(x);
+y = str2num(y);
+depot = [x,y];
+clear x; clear y; clear coordinates;
+
+% Input for delivery locations
 deliveries = zeros(num_Deliveries, 2);
 for i = 1:num_Deliveries
     coordinates = input(['Enter coordinates for delivery ' num2str(i) ' (x,y): '], 's');
@@ -26,27 +43,30 @@ for i = 1:num_Deliveries
     y= str2num(y);
      if x > gridx
         disp("X Coordinate Delivery Location Outside of City Limits")
-        break;  % Exit if
+         return; % Stop if
      elseif y > gridy
         disp("Y Coordinate Delivery Location Outside of City Limits")
-        break;  % Exit if
+         return; % Stop if
     else
     deliveries(i, :) = [x, y];
     end
 end
-
-%%
-[pp,disttots,p] = createpaths(deliveries,num_V);
+% Create shortest paths
+[pp,disttots,p] = createpaths(deliveries,num_V,depot);
+% Check and correct for vehicle collisions
 [samelocation,all_locations_w_time] = locationcheck(pp);
+% Check if any vehicles travel for longer than 40 minutes
 [needTimeCorrection] = timecheck(all_locations_w_time);
-
+% If need time correction
 itr = 1;
 while needTimeCorrection == true && itr < 200
-   [pp,disttots,p] = timecorrection(all_locations_w_time,deliveries,p,num_V);
-   [samelocation,all_locations_w_time] = locationcheck(pp);
-    itr = itr+1
+   [pp,disttots,p] = timecorrection(all_locations_w_time,deliveries,p,num_V,depot); % Correct paths
+   [samelocation,all_locations_w_time] = locationcheck(pp); % Check if location requirement is met
+   [needTimeCorrection] = timecheck(all_locations_w_time); % Checkif time requirement is met
+    itr = itr+1;
 end
-%%
+
+% User output: Display paths for each vehicle
 timetots = 0;
  for i = 1:num_V
     totalPath = [];
@@ -57,19 +77,20 @@ timetots = 0;
         tt = times(end,3);
         timetots(i) = tt;
     end
-    
     fprintf('Vehicle %d Path:\n', i);
     disp(totalPath);    
  end
-
 for i =1:num_V
-fprintf('Vehicle %d Total Distance: %f \n', i,disttots(i));
-fprintf('Vehicle %d Total Time: %d \n', i,timetots(i));
+    fprintf('Vehicle %d Total Distance: %f \n', i,disttots(i));
+    fprintf('Vehicle %d Total Time: %d \n', i,timetots(i));
+end
+% User output warning if time constraint could not be met
+if (needTimeCorrection == true)
+    fprintf('Warning: Time constraint can not be met. At least one vehicle travel time is greater than 40 minutes\n')
 end
 
-%%
-[gridx,gridy] = meshgrid(1:gridx,1:gridy);
-%plot(gridx,gridy,'.w')
+% Plot vehicle paths
+[gridxx,gridyy] = meshgrid(1:gridx,1:gridy);
 hold on
 for i=1:num_V
     totalPath =[];
@@ -78,13 +99,19 @@ for i=1:num_V
         totalPath = vertcat(totalPath, pathPoints);
     end
     plot(totalPath(:, 1), totalPath(:, 2), 'LineWidth', 1);
-    for ii =1:3:length(totalPath)
-    text(totalPath(ii,1)+.25,totalPath(ii,2)+.25,string(ii),'FontSize',8,'FontWeight','bold');
+    for ii =1:3:length(totalPath) % label for order of travel
+    text(totalPath(ii,1)+.25,totalPath(ii,2)+.25,string(ii),'FontSize',8,'FontWeight','bold'); 
     end
 end
 plot(deliveries(:,1),deliveries(:,2),'.b','MarkerSize', 15)
-plot(10,10,'gsquare', 'MarkerFaceColor','green')
-legend('Vehicle 1','Vehicle 2', 'Vehicle 3', 'Deliveries','Delivery Origin')
-xlim([0,20])
-ylim([0, 20])
+plot(depot(1),depot(2),'gsquare', 'MarkerFaceColor','green')
+for t = 1:num_V
+    legend_entries{t} = sprintf('Vehicle %d', t);
+end
+legend_entries{end+1} = 'Deliveries';
+legend_entries{end+1} = 'Delivery Origin';
+legend(legend_entries)
+xlim([0,gridx])
+ylim([0,gridy])
 hold off
+end
